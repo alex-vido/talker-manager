@@ -1,7 +1,12 @@
 const talkRouter = require('express').Router();
 const fs = require('fs/promises');
+const crypto = require('crypto');
 
 const FILE_PATH = 'src/talker.json';
+
+function generateToken() {
+  return crypto.randomBytes(8).toString('hex');
+}
 
 talkRouter.get('/talker', async (req, res) => {
   try {
@@ -28,18 +33,26 @@ talkRouter.get('/talker/:id', async (req, res) => {
       res.json(haveTalker);
     }
   } catch (error) {
-    res.status(error.statusCode || 404).json({ message: 'Pessoa palestrante não encontrada' });
+    res.status(error.statusCode || 404).json({ message: error.message });
   }
 });
 
-/*
-talkRouter.post('/talker', async (req, res) => {
-  const { id, name, age, talkWatchedAt, talkRate } = req.body;
 
-  // const [{ insertId }] = await connection.execute(insertTalker, [id, name, age, talkWatchedAt, talkRate]);
-  return res.status(201).json({ id: insertId, name });
+talkRouter.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(404).json({ message: 'Email e senha são obrigatórios' });
+    }
+    const token = generateToken();
+    res.status(200).json({ token });
+  }
+  catch (error) {
+    res.status(error.statusCode || 404).json({ message: error.message });
+  }  
 });
 
+/*
 talkRouter.post('/talker/:talkerId', async (req, res) => {
   const { name, age, talkWatchedAt, talkRate} = req.body;
   const { talkerId } = req.params;
