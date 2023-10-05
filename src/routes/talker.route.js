@@ -37,7 +37,6 @@ talkRouter.get('/talker/:id', async (req, res) => {
   }
 });
 
-
 talkRouter.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -46,8 +45,7 @@ talkRouter.post('/login', async (req, res) => {
     }
     const token = generateToken();
     res.status(200).json({ token });
-  }
-  catch (error) {
+  } catch (error) {
     res.status(error.statusCode || 404).json({ message: error.message });
   }  
 });
