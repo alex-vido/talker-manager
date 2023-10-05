@@ -1,6 +1,4 @@
 const talkRouter = require('express').Router();
-// const connection = require('../database/connection');
-// const { getAllTalkers, insertTalker } = require('../database/queries');
 const fs = require('fs/promises');
 
 talkRouter.get('/talker', async (req, res) => {
@@ -8,6 +6,25 @@ talkRouter.get('/talker', async (req, res) => {
     const Primarydata = await fs.readFile('src/talker.json', 'utf8');
     const data = JSON.parse(Primarydata);
     res.json(data);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
+talkRouter.get('/talker/:id', async (req, res) => {
+  try {
+    const Primarydata = await fs.readFile('src/talker.json', 'utf8');
+    const data = JSON.parse(Primarydata);
+    
+    const id = parseInt(req.params.id, 10);
+
+    const haveTalker = data.find((talker) => talker.id === id);
+
+    if (!haveTalker) {
+      res.status(404).json({ error: 'Talker não encontrado' });
+    } else {
+      res.json(haveTalker);
+    }
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
   }
