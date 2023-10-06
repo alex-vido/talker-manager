@@ -41,4 +41,13 @@ talkRouter.post('/login', loginValidation, async (req, res) => {
   }  
 });
 
+/*
+talkRouter.post('/talker', async (req, res) => {
+  const { firstName, lastName, email, phone } = req.body;
+
+  const [{ insertId }] = await connection.execute(insertPeople, [firstName, lastName, email, phone]);
+  return res.status(201).json({ id: insertId, firstName });
+});
+*/
+
 module.exports = talkRouter;
