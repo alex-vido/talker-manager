@@ -1,6 +1,15 @@
 const talkRouter = require('express').Router();
 const fs = require('fs/promises');
-const { loginValidation } = require('../middlewares');
+const generateToken = require('../utils/tokenGenerator');
+const { 
+  loginValidation, 
+  authenticateToken, 
+  nameValidation, 
+  ageValidation, 
+  talkValidation,
+  watchedAtValidation,
+  rateValidation,
+} = require('../middlewares');
 
 const FILE_PATH = 'src/talker.json';
 
@@ -35,31 +44,33 @@ talkRouter.get('/talker/:id', async (req, res) => {
 
 talkRouter.post('/login', loginValidation, async (req, res) => {
   try {
-    console.log('');
+    const token = generateToken();
+    res.status(200).json({ token });
   } catch (error) {
     res.status(error.statusCode || 400).json({ message: error.message });
   }  
 });
 
-talkRouter.post('/talker', async (req, res) => {
-  try {
-    const Primarydata = await fs.readFile(FILE_PATH, 'utf8');
-    const data = JSON.parse(Primarydata);
-
-    const { name, age, talk } = req.body;
-
-    const id = data.length + 1;
-
-    const newTalker = { id, name, age, talk };
-
-    data.push(newTalker);
-
-    await fs.writeFile(FILE_PATH, JSON.stringify(data));
-
-    res.status(201).json(newTalker);
-  } catch (error) {
-    res.status(error.statusCode || 400).json({ message: error.message });
-  }
-});
+talkRouter.post('/talker',
+  authenticateToken,
+  nameValidation,
+  ageValidation, 
+  talkValidation, 
+  watchedAtValidation, 
+  rateValidation, 
+  async (req, res) => {
+    try {
+      const Primarydata = await fs.readFile(FILE_PATH, 'utf8');
+      const data = JSON.parse(Primarydata);
+      const { name, age, talk } = req.body;
+      const id = data.length + 1;
+      const newTalker = { id, name, age, talk };
+      data.push(newTalker);
+      await fs.writeFile(FILE_PATH, JSON.stringify(data));
+      res.status(201).json(newTalker);
+    } catch (error) {
+      res.status(error.statusCode || 401).json({ message: error.message });
+    }
+  });
 
 module.exports = talkRouter;
