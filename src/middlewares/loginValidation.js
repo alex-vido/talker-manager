@@ -1,8 +1,8 @@
+const crypto = require('crypto');
+
 function generateToken() {
   return crypto.randomBytes(8).toString('hex');
 }
-const crypto = require('crypto');
-
 
 const loginValidation = (req, res, next) => {
   const { email, password } = req.body;

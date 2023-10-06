@@ -41,13 +41,25 @@ talkRouter.post('/login', loginValidation, async (req, res) => {
   }  
 });
 
-/*
 talkRouter.post('/talker', async (req, res) => {
-  const { firstName, lastName, email, phone } = req.body;
+  try {
+    const Primarydata = await fs.readFile(FILE_PATH, 'utf8');
+    const data = JSON.parse(Primarydata);
 
-  const [{ insertId }] = await connection.execute(insertPeople, [firstName, lastName, email, phone]);
-  return res.status(201).json({ id: insertId, firstName });
+    const { name, age, talk } = req.body;
+
+    const id = data.length + 1;
+
+    const newTalker = { id, name, age, talk };
+
+    data.push(newTalker);
+
+    await fs.writeFile(FILE_PATH, JSON.stringify(data));
+
+    res.status(201).json(newTalker);
+  } catch (error) {
+    res.status(error.statusCode || 400).json({ message: error.message });
+  }
 });
-*/
 
 module.exports = talkRouter;
