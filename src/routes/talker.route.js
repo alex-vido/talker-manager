@@ -27,11 +27,8 @@ talkRouter.get('/talker/:id', async (req, res) => {
   try {
     const Primarydata = await fs.readFile(FILE_PATH, 'utf8');
     const data = JSON.parse(Primarydata);
-    
     const id = parseInt(req.params.id, 10);
-
     const haveTalker = data.find((talker) => talker.id === id);
-
     if (haveTalker === undefined) {
       res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
     } else {
@@ -68,6 +65,32 @@ talkRouter.post('/talker',
       data.push(newTalker);
       await fs.writeFile(FILE_PATH, JSON.stringify(data));
       res.status(201).json(newTalker);
+    } catch (error) {
+      res.status(error.statusCode || 401).json({ message: error.message });
+    }
+  });
+
+talkRouter.put('/talker/:id',
+  authenticateToken,
+  nameValidation,
+  ageValidation,
+  talkValidation, 
+  watchedAtValidation, 
+  rateValidation, 
+  async (req, res) => {
+    try {
+      const Primarydata = await fs.readFile(FILE_PATH, 'utf8');
+      const data = JSON.parse(Primarydata);
+      const { name, age, talk } = req.body;
+      const id = parseInt(req.params.id, 10);
+      const index = data.findIndex((talker) => talker.id === id);
+      if (index === -1) {
+        return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
+      }
+      const newTalker = { id, name, age, talk };
+      data[index] = newTalker;
+      await fs.writeFile(FILE_PATH, JSON.stringify(data));
+      res.status(200).json(newTalker);
     } catch (error) {
       res.status(error.statusCode || 401).json({ message: error.message });
     }
