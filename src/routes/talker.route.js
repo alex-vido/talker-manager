@@ -1,6 +1,7 @@
 const talkRouter = require('express').Router();
 const fs = require('fs/promises');
 const generateToken = require('../utils/tokenGenerator');
+const readFile = require('../middlewares/readFile');
 const { 
   loginValidation, 
   authenticateToken, 
@@ -9,15 +10,14 @@ const {
   talkValidation,
   watchedAtValidation,
   rateValidation,
+  findIdValidation,
 } = require('../middlewares');
 
 const FILE_PATH = 'src/talker.json';
 
 talkRouter.get('/talker', async (req, res) => {
   try {
-    const Primarydata = await fs.readFile(FILE_PATH, 'utf-8');
-    const data = JSON.parse(Primarydata);
-    res.json(data);
+    res.json(await readFile());
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
   }
@@ -25,8 +25,7 @@ talkRouter.get('/talker', async (req, res) => {
 
 talkRouter.get('/talker/:id', async (req, res) => {
   try {
-    const Primarydata = await fs.readFile(FILE_PATH, 'utf8');
-    const data = JSON.parse(Primarydata);
+    const data = await readFile();
     const id = parseInt(req.params.id, 10);
     const haveTalker = data.find((talker) => talker.id === id);
     if (haveTalker === undefined) {
@@ -57,8 +56,7 @@ talkRouter.post('/talker',
   rateValidation, 
   async (req, res) => {
     try {
-      const Primarydata = await fs.readFile(FILE_PATH, 'utf8');
-      const data = JSON.parse(Primarydata);
+      const data = await readFile();
       const { name, age, talk } = req.body;
       const id = data.length + 1;
       const newTalker = { id, name, age, talk };
@@ -76,19 +74,15 @@ talkRouter.put('/talker/:id',
   ageValidation,
   talkValidation, 
   watchedAtValidation, 
-  rateValidation, 
+  rateValidation,
+  findIdValidation,
   async (req, res) => {
     try {
-      const Primarydata = await fs.readFile(FILE_PATH, 'utf8');
-      const data = JSON.parse(Primarydata);
+      const data = await readFile();
       const { name, age, talk } = req.body;
       const id = parseInt(req.params.id, 10);
-      const index = data.findIndex((talker) => talker.id === id);
-      if (index === -1) {
-        return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
-      }
       const newTalker = { id, name, age, talk };
-      data[index] = newTalker;
+      data[id] = newTalker;
       await fs.writeFile(FILE_PATH, JSON.stringify(data));
       res.status(200).json(newTalker);
     } catch (error) {
