@@ -90,4 +90,19 @@ talkRouter.put('/talker/:id',
     }
   });
 
+talkRouter.delete('/talker/:id',
+  authenticateToken,
+  findIdValidation,
+  async (req, res) => {
+    try {
+      const data = await readFile();
+      const id = parseInt(req.params.id, 10);
+      const newTalker = data.filter((talker) => talker.id !== id);
+      await fs.writeFile(FILE_PATH, JSON.stringify(newTalker));
+      res.status(204).json();
+    } catch (error) {
+      res.status(error.statusCode || 401).json({ message: error.message });
+    }
+  });
+
 module.exports = talkRouter;
